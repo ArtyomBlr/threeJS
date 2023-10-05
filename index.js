@@ -1,10 +1,12 @@
 import { BoxGeometry, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
-
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 // The scene
+
 const scene = new Scene();
 
 // The Object
+
 const geometry = new BoxGeometry(0.5, 0.5, 0.5);
 
 const canvas = document.getElementById('three-canvas');
@@ -44,15 +46,15 @@ window.addEventListener('resize', () => {
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 });
 
+// Controls
+
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+
 // Animation 
 
 function animate() {
-  blueCubeMesh.rotation.x += 0.01;
-  blueCubeMesh.rotation.z += 0.01;
-
-  redCubeMesh.rotation.x += 0.01;
-  redCubeMesh.rotation.z += 0.01;
-
+  controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
