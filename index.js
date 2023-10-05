@@ -1,4 +1,4 @@
-import { BoxGeometry, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { BoxGeometry, DirectionalLight, Mesh, MeshBasicMaterial, MeshPhongMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 // The scene
@@ -11,7 +11,12 @@ const geometry = new BoxGeometry(0.5, 0.5, 0.5);
 
 const canvas = document.getElementById('three-canvas');
 
-const blueCubeMaterial = new MeshBasicMaterial( {color: 'blue'} );
+const blueCubeMaterial = new MeshPhongMaterial( {
+  color: '0xffffff',
+  specular: 'white',
+	shininess: 100,
+	wireframe: true
+} );
 const redCubeMaterial = new MeshBasicMaterial( {color: 'red'} );
 
 const blueCubeMesh = new Mesh(geometry, blueCubeMaterial);
@@ -37,6 +42,15 @@ camera.position.z = 2;
 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+// Lights
+
+const light1 = new DirectionalLight(0xffffff);
+const light2 = new DirectionalLight(0xffffff);
+light1.position.set(1, 2, 3);
+light2.position.set(-1, -2, -3);
+scene.add(light1);
+scene.add(light2);
+
 // Responsibility
 
 window.addEventListener('resize', () => {
@@ -51,7 +65,7 @@ window.addEventListener('resize', () => {
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 
-// Animation 
+// Animation  
 
 function animate() {
   controls.update();
