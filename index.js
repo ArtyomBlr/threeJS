@@ -1,4 +1,15 @@
-import { PointLight, Mesh, SphereGeometry, MeshPhongMaterial, PerspectiveCamera, Scene, WebGLRenderer, AxesHelper, Object3D } from 'three';
+import { 
+  PointLight, 
+  Mesh, 
+  SphereGeometry, 
+  MeshPhongMaterial, 
+  PerspectiveCamera, 
+  Scene, 
+  WebGLRenderer, 
+  AxesHelper, 
+  Object3D, 
+  GridHelper 
+} from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 const canvas = document.getElementById('three-canvas');
@@ -44,6 +55,7 @@ const renderer = new WebGLRenderer({ canvas });
 
 renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 renderer.render(scene, camera);
+renderer.setClearColor(0x3e3e3e, 1);
 
 camera.position.z = 2;
 
@@ -54,14 +66,12 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 const axesHelper = new AxesHelper();
 scene.add(axesHelper);
 
-// Lights
+const grid = new GridHelper();
+grid.material.depthTest = false;
+grid.renderOrder = 2;
+scene.add(grid);
 
-// const light1 = new DirectionalLight(0xffffff);
-// const light2 = new DirectionalLight(0xffffff);
-// light1.position.set(1, 2, 3);
-// light2.position.set(-1, -2, -3);
-// scene.add(light1);
-// scene.add(light2);
+// Lights
 
 const color = 0xffffff;
 const intensity = 10;
