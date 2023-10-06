@@ -1,5 +1,7 @@
-import { BoxGeometry, PointLight, Mesh, SphereGeometry, MeshPhongMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { PointLight, Mesh, SphereGeometry, MeshPhongMaterial, PerspectiveCamera, Scene, WebGLRenderer, AxesHelper, Object3D } from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+const canvas = document.getElementById('three-canvas');
 
 // The scene
 
@@ -7,21 +9,30 @@ const scene = new Scene();
 
 // The Object
 
-const geometryBox = new BoxGeometry(0.5, 0.5, 0.5);
-const geometrySphere = new SphereGeometry(0.5); 
+const solarSystem = new Object3D();
+scene.add(solarSystem);
 
-const canvas = document.getElementById('three-canvas');
+const geometrySphere1 = new SphereGeometry(0.5); 
+const geometrySphere2 = new SphereGeometry(0.5); 
+const geometrySphere3 = new SphereGeometry(0.5); 
 
-const blueCubeMaterial = new MeshPhongMaterial( {color: 'yellow' });
-const redCubeMaterial = new MeshPhongMaterial( {color: 'red'} );
+const yellowSphereMaterial = new MeshPhongMaterial( {color: 'gold' });
+const blueSphereMaterial = new MeshPhongMaterial( {color: 'blue' });
+const whiteSphereMaterial = new MeshPhongMaterial( {color: 'white' });
 
-const cubeMesh = new Mesh(geometryBox, blueCubeMaterial);
-cubeMesh.position.x -= 1;
-const sphereMesh = new Mesh(geometrySphere, redCubeMaterial);
-sphereMesh.position.x += 1;
+const sunMesh = new Mesh(geometrySphere1, yellowSphereMaterial);
 
-scene.add(cubeMesh);
-scene.add(sphereMesh);
+const earthMesh = new Mesh(geometrySphere2, blueSphereMaterial);
+earthMesh.scale.set(0.2, 0.2, 0.2);
+earthMesh.position.set(3, 0, 0);
+
+const moonMesh = new Mesh(geometrySphere3, whiteSphereMaterial);
+moonMesh.scale.set(0.4, 0.4, 0.4);
+moonMesh.position.set(1, 0, 0);
+
+solarSystem.add(sunMesh);
+sunMesh.add(earthMesh);
+earthMesh.add(moonMesh);
 
 // The camera
 
@@ -38,6 +49,11 @@ camera.position.z = 2;
 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+// Axes helper 
+
+const axesHelper = new AxesHelper();
+scene.add(axesHelper);
+
 // Lights
 
 // const light1 = new DirectionalLight(0xffffff);
@@ -48,7 +64,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 // scene.add(light2);
 
 const color = 0xffffff;
-const intensity = 2;
+const intensity = 10;
 const light = new PointLight(color, intensity);
 light.position.set(1, 1, 1);
 
@@ -71,8 +87,14 @@ controls.enableDamping = true;
 // Animation  
 
 function animate() {
+  sunMesh.rotation.y += 0.005;
+  earthMesh.rotation.y += 0.05;
+  sunMesh.rotation.x += 0.0025;
+  earthMesh.rotation.x += 0.025;
+
   controls.update();
   renderer.render(scene, camera);
+
   requestAnimationFrame(animate);
 }
 
