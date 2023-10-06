@@ -1,4 +1,4 @@
-import { BoxGeometry, DirectionalLight, Mesh, MeshBasicMaterial, MeshPhongMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { BoxGeometry, PointLight, Mesh, SphereGeometry, MeshPhongMaterial, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 // The scene
@@ -7,25 +7,21 @@ const scene = new Scene();
 
 // The Object
 
-const geometry = new BoxGeometry(0.5, 0.5, 0.5);
+const geometryBox = new BoxGeometry(0.5, 0.5, 0.5);
+const geometrySphere = new SphereGeometry(0.5); 
 
 const canvas = document.getElementById('three-canvas');
 
-const blueCubeMaterial = new MeshPhongMaterial( {
-  color: '0xffffff',
-  specular: 'white',
-	shininess: 100,
-	wireframe: true
-} );
-const redCubeMaterial = new MeshBasicMaterial( {color: 'red'} );
+const blueCubeMaterial = new MeshPhongMaterial( {color: 'yellow' });
+const redCubeMaterial = new MeshPhongMaterial( {color: 'red'} );
 
-const blueCubeMesh = new Mesh(geometry, blueCubeMaterial);
-blueCubeMesh.position.x -= 1;
-const redCubeMesh = new Mesh(geometry, redCubeMaterial);
-redCubeMesh.position.x += 1;
+const cubeMesh = new Mesh(geometryBox, blueCubeMaterial);
+cubeMesh.position.x -= 1;
+const sphereMesh = new Mesh(geometrySphere, redCubeMaterial);
+sphereMesh.position.x += 1;
 
-scene.add(blueCubeMesh);
-scene.add(redCubeMesh);
+scene.add(cubeMesh);
+scene.add(sphereMesh);
 
 // The camera
 
@@ -44,12 +40,19 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 // Lights
 
-const light1 = new DirectionalLight(0xffffff);
-const light2 = new DirectionalLight(0xffffff);
-light1.position.set(1, 2, 3);
-light2.position.set(-1, -2, -3);
-scene.add(light1);
-scene.add(light2);
+// const light1 = new DirectionalLight(0xffffff);
+// const light2 = new DirectionalLight(0xffffff);
+// light1.position.set(1, 2, 3);
+// light2.position.set(-1, -2, -3);
+// scene.add(light1);
+// scene.add(light2);
+
+const color = 0xffffff;
+const intensity = 2;
+const light = new PointLight(color, intensity);
+light.position.set(1, 1, 1);
+
+scene.add(light);
 
 // Responsibility
 
