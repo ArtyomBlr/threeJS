@@ -11,6 +11,7 @@ import {
   GridHelper 
 } from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 const canvas = document.getElementById('three-canvas');
 
@@ -27,7 +28,9 @@ const geometrySphere1 = new SphereGeometry(0.5);
 const geometrySphere2 = new SphereGeometry(0.5); 
 const geometrySphere3 = new SphereGeometry(0.5); 
 
-const yellowSphereMaterial = new MeshPhongMaterial( {color: 'gold' });
+const sunColor = { color: 0xcba51a };
+
+const yellowSphereMaterial = new MeshPhongMaterial(sunColor);
 const blueSphereMaterial = new MeshPhongMaterial( {color: 'blue' });
 const whiteSphereMaterial = new MeshPhongMaterial( {color: 'white' });
 
@@ -109,3 +112,24 @@ function animate() {
 }
 
 animate();
+
+// Debugging 
+
+const gui = new GUI();
+
+const min = -3;
+const max = 3;
+const step = 0.01;
+
+gui.add(solarSystem.position, 'y', min, max, step);
+gui.add(solarSystem.position, 'x', min, max, step);
+gui.add(solarSystem.position, 'z', min, max, step);
+
+gui.add(earthMesh, 'visible').name('Cube visibility');
+
+gui.addFolder('Light').add(yellowSphereMaterial, "wireframe").name("Wireframe");
+
+
+gui.addColor(sunColor, 'color').onChange(() => {
+	sunMesh.material.color.set(sunColor.color);
+});
