@@ -1,5 +1,6 @@
 import { 
-  PointLight, 
+  DirectionalLight, 
+  AmbientLight,
   Mesh, 
   SphereGeometry, 
   MeshPhongMaterial, 
@@ -8,9 +9,12 @@ import {
   WebGLRenderer, 
   AxesHelper, 
   Object3D, 
-  GridHelper 
+  GridHelper,
+  PointsMaterial,
+  Points
 } from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 const canvas = document.getElementById('three-canvas');
@@ -27,14 +31,19 @@ scene.add(solarSystem);
 const geometrySphere1 = new SphereGeometry(0.5); 
 const geometrySphere2 = new SphereGeometry(0.5); 
 const geometrySphere3 = new SphereGeometry(0.5); 
+const geometryPoints = new SphereGeometry(8, 5, 5);
 
 const sunColor = { color: 0xcba51a };
 
 const yellowSphereMaterial = new MeshPhongMaterial(sunColor);
 const blueSphereMaterial = new MeshPhongMaterial( {color: 'blue' });
 const whiteSphereMaterial = new MeshPhongMaterial( {color: 'white' });
+const whitePointsMaterial = new PointsMaterial({
+	color: 'white',
+	size: 0.2,
+});
 
-const sunMesh = new Mesh(geometrySphere1, yellowSphereMaterial);
+const sunMesh = new Mesh(geometrySphere1, yellowSphereMaterial);  
 
 const earthMesh = new Mesh(geometrySphere2, blueSphereMaterial);
 earthMesh.scale.set(0.2, 0.2, 0.2);
@@ -44,7 +53,10 @@ const moonMesh = new Mesh(geometrySphere3, whiteSphereMaterial);
 moonMesh.scale.set(0.4, 0.4, 0.4);
 moonMesh.position.set(1, 0, 0);
 
+const points = new Points(geometryPoints, whitePointsMaterial);
+
 solarSystem.add(sunMesh);
+solarSystem.add(points);
 sunMesh.add(earthMesh);
 earthMesh.add(moonMesh);
 
@@ -60,7 +72,9 @@ renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 renderer.render(scene, camera);
 renderer.setClearColor(0x3e3e3e, 1);
 
-camera.position.z = 2;
+camera.position.z = 30;
+camera.position.y = 30;
+camera.position.x = 30;
 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -77,11 +91,13 @@ scene.add(grid);
 // Lights
 
 const color = 0xffffff;
-const intensity = 10;
-const light = new PointLight(color, intensity);
+const intensity = 1;
+const light = new DirectionalLight(color, intensity);
 light.position.set(1, 1, 1);
 
-scene.add(light);
+const baseLight = new AmbientLight(color, intensity);
+
+scene.add(light, baseLight);
 
 // Responsibility
 
@@ -112,6 +128,27 @@ function animate() {
 }
 
 animate();
+
+// Loader
+
+const loader = new GLTFLoader();
+const loadingElem = document.querySelector('#loader-container');
+const loadingText = loadingElem.querySelector('p');
+
+loader.load('./resources/glft/police_station.glb',
+	( gltf ) => {
+    loadingElem.style.display = 'none';
+		scene.add( gltf.scene );
+	},
+	( progress ) => {
+    const current = (progress.loaded /  progress.total) * 100;
+    const formatted = Math.trunc(current * 100) / 100; 
+    loadingText.textContent = `Loading: ${formatted}%`;
+	},
+	( error ) => {
+		console.log( 'An error happened: ', error );
+	}
+);
 
 // Debugging 
 
