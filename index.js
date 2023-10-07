@@ -11,7 +11,9 @@ import {
   Object3D, 
   GridHelper,
   PointsMaterial,
-  Points
+  Points,
+  Raycaster,
+  Vector2
 } from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -72,9 +74,9 @@ renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 renderer.render(scene, camera);
 renderer.setClearColor(0x3e3e3e, 1);
 
-camera.position.z = 30;
-camera.position.y = 30;
-camera.position.x = 30;
+camera.position.z = 5;
+camera.position.y = 5;
+camera.position.x = 6;
 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -129,26 +131,72 @@ function animate() {
 
 animate();
 
+// Raycaster
+
+const raycaster = new Raycaster();
+const mouse = new Vector2();
+let previousSelectedUuid;
+
+const objectsToTest = { 
+  [points.uuid]: {object: points, color: 'white'},
+  [sunMesh.uuid]: {object: sunMesh, color: sunColor.color},
+  [earthMesh.uuid]: {object: earthMesh, color: 'blue'},
+  [moonMesh.uuid]: {object: moonMesh, color: 'white'},
+};
+
+const objectsArray = Object.values(objectsToTest).map(item => item.object);
+
+window.addEventListener('mousemove', (event) => {
+	mouse.x = event.clientX / canvas.clientWidth * 2 - 1;
+	mouse.y = - (event.clientY / canvas.clientHeight) * 2 + 1;
+
+	raycaster.setFromCamera(mouse, camera)
+	const intersects = raycaster.intersectObjects(objectsArray);
+
+  if(!intersects.length) {
+    resetPreviousSelection();
+    return;
+  };
+
+  const firstIntersection = intersects[0];
+  firstIntersection.object.material.color.set('red')
+
+  const isNotPrevious = previousSelectedUuid !== firstIntersection.object.uuid;
+
+	if(!!previousSelectedUuid && isNotPrevious) {
+    resetPreviousSelection();
+  }
+
+  previousSelectedUuid = firstIntersection.object.uuid;
+});
+
+function resetPreviousSelection() {
+  if(!previousSelectedUuid) return;
+
+  const previousSelected = objectsToTest[previousSelectedUuid];
+  previousSelected.object.material.color.set(previousSelected.color);
+}
+
 // Loader
 
-const loader = new GLTFLoader();
-const loadingElem = document.querySelector('#loader-container');
-const loadingText = loadingElem.querySelector('p');
+// const loader = new GLTFLoader();
+// const loadingElem = document.querySelector('#loader-container');
+// const loadingText = loadingElem.querySelector('p');
 
-loader.load('./resources/glft/police_station.glb',
-	( gltf ) => {
-    loadingElem.style.display = 'none';
-		scene.add( gltf.scene );
-	},
-	( progress ) => {
-    const current = (progress.loaded /  progress.total) * 100;
-    const formatted = Math.trunc(current * 100) / 100; 
-    loadingText.textContent = `Loading: ${formatted}%`;
-	},
-	( error ) => {
-		console.log( 'An error happened: ', error );
-	}
-);
+// loader.load('./resources/glft/police_station.glb',
+// 	( gltf ) => {
+//     loadingElem.style.display = 'none';
+// 		scene.add( gltf.scene );
+// 	},
+// 	( progress ) => {
+//     const current = (progress.loaded /  progress.total) * 100;
+//     const formatted = Math.trunc(current * 100) / 100; 
+//     loadingText.textContent = `Loading: ${formatted}%`;
+// 	},
+// 	( error ) => {
+// 		console.log( 'An error happened: ', error );
+// 	}
+// );
 
 // Debugging 
 

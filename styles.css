@@ -13,6 +13,7 @@
 }
 
 #loader-container {
+    position: fixed;
     background-color: black;
     width: 100vw;
     height: 100vh;
@@ -21,6 +22,7 @@
     justify-content: center;
     flex-direction: column;
     color: white;
+    z-index: 1;
 }
 
 /* From uiverse.io by @barisdogansutcu */
