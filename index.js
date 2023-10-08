@@ -18,12 +18,20 @@ import {
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import Stats from 'stats.js/src/Stats';
 
 const canvas = document.getElementById('three-canvas');
 
 // The scene
 
 const scene = new Scene();
+
+// Stats
+
+const stats = new Stats();
+stats.showPanel(2);
+document.body.appendChild( stats.dom );
 
 // The Object
 
@@ -101,6 +109,17 @@ const baseLight = new AmbientLight(color, intensity);
 
 scene.add(light, baseLight);
 
+// 2D rendering
+
+const labelRenderer = new CSS2DRenderer();
+let gltfScene;
+
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.pointerEvents = 'none';
+labelRenderer.domElement.style.top = '0';
+document.body.appendChild( labelRenderer.domElement );
+
 // Responsibility
 
 window.addEventListener('resize', () => {
@@ -108,7 +127,30 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
 
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+  labelRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
 });
+
+// Loader
+
+const loader = new GLTFLoader();
+const loadingElem = document.querySelector('#loader-container');
+const loadingText = loadingElem.querySelector('p');
+
+loader.load('./resources/glft/police_station.glb',
+	( gltf ) => {
+    loadingElem.style.display = 'none';
+		scene.add( gltf.scene );
+    gltfScene = gltf.scene;
+	},
+	( progress ) => {
+    const current = (progress.loaded /  progress.total) * 100;
+    const formatted = Math.trunc(current * 100) / 100; 
+    loadingText.textContent = `Loading: ${formatted}%`;
+	},
+	( error ) => {
+		console.log( 'An error happened: ', error );
+	}
+);
 
 // Controls
 
@@ -123,10 +165,16 @@ function animate() {
   sunMesh.rotation.x += 0.0025;
   earthMesh.rotation.x += 0.025;
 
+  stats.begin();
+
+
   controls.update();
   renderer.render(scene, camera);
 
+  labelRenderer.render(scene, camera);
   requestAnimationFrame(animate);
+
+  stats.end();
 }
 
 animate();
@@ -169,6 +217,50 @@ window.addEventListener('mousemove', (event) => {
 
   previousSelectedUuid = firstIntersection.object.uuid;
 });
+window.addEventListener('dblclick', (event) => {
+	mouse.x = event.clientX / canvas.clientWidth * 2 - 1;
+	mouse.y = - (event.clientY / canvas.clientHeight) * 2 + 1;
+
+	raycaster.setFromCamera(mouse, camera)
+	const intersects = raycaster.intersectObject(gltfScene);
+
+  console.log(intersects)
+
+  if(!intersects.length) {
+    return;
+  };
+
+  const firstIntersection = intersects[0];
+  const location =  firstIntersection.point;
+
+  const result = window.prompt("Introduce message:");
+
+  const base = document.createElement( 'div' );
+  base.className = 'base-label';
+  
+  const deleteButton = document.createElement( 'button' );
+  deleteButton.textContent = 'X';
+  deleteButton.className = 'button hidden';
+  base.appendChild(deleteButton);
+
+  base.onmouseenter = () => deleteButton.classList.remove('hidden');
+  base.onmouseleave = () => deleteButton.classList.add('hidden');
+  
+  const postit = document.createElement( 'div' );
+  postit.className = 'label';
+  postit.textContent = result;
+  base.appendChild(postit);
+
+  const ifcJsTitle = new CSS2DObject( base );
+  ifcJsTitle.position.copy(location);
+  scene.add(ifcJsTitle);
+
+  deleteButton.onclick = () => {
+	  base.remove();
+	  ifcJsTitle.element = null;
+	  ifcJsTitle.removeFromParent();
+  }
+});
 
 function resetPreviousSelection() {
   if(!previousSelectedUuid) return;
@@ -176,27 +268,6 @@ function resetPreviousSelection() {
   const previousSelected = objectsToTest[previousSelectedUuid];
   previousSelected.object.material.color.set(previousSelected.color);
 }
-
-// Loader
-
-// const loader = new GLTFLoader();
-// const loadingElem = document.querySelector('#loader-container');
-// const loadingText = loadingElem.querySelector('p');
-
-// loader.load('./resources/glft/police_station.glb',
-// 	( gltf ) => {
-//     loadingElem.style.display = 'none';
-// 		scene.add( gltf.scene );
-// 	},
-// 	( progress ) => {
-//     const current = (progress.loaded /  progress.total) * 100;
-//     const formatted = Math.trunc(current * 100) / 100; 
-//     loadingText.textContent = `Loading: ${formatted}%`;
-// 	},
-// 	( error ) => {
-// 		console.log( 'An error happened: ', error );
-// 	}
-// );
 
 // Debugging 
 
